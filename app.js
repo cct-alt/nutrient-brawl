@@ -88,6 +88,7 @@ function nextQuestion() {
         if (timeLeft <= 0) {
             clearInterval(timer);
             hp -= 100; combo = 0; 
+            showFloatingText('-100', '#1976D2', 'screen-single'); // 顯示玩家被扣血 (藍色字)
             playerTakeDamage(); 
             optionsArea.innerHTML = "<h3 style='color:red;'>超時！病魔對你造成 100 傷害！</h3>";
             setTimeout(nextQuestion, 1500);
@@ -112,6 +113,8 @@ function checkAnswer(selectedIndex, btnElement) {
         let totalPoints = basePoints + timeBonus;
         
         bossHp -= dmg;
+        showFloatingText(`-${dmg}`, '#d32f2f', 'boss-container'); // 顯示紅色扣血數字
+
         score += totalPoints; // 加上總分
 
         document.getElementById('boss-avatar').innerText = "💥"; 
@@ -221,4 +224,23 @@ function exportToCSV() {
         const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
         link.download = `營養素大亂鬥_紀錄.csv`; link.click();
     });
+}
+
+// RPG 飄浮文字特效函數
+function showFloatingText(text, color, elementId) {
+    const target = document.getElementById(elementId);
+    const floater = document.createElement('div');
+    floater.className = 'floating-text';
+    floater.style.color = color;
+    floater.innerText = text;
+    
+    // 隨機一點左右偏移，讓數字不會全疊在一起
+    const randomX = Math.floor(Math.random() * 60) - 30; 
+    floater.style.left = `calc(50% + ${randomX}px)`;
+    floater.style.top = '20%';
+    
+    target.appendChild(floater);
+    
+    // 1秒後動畫結束自動移除元素
+    setTimeout(() => floater.remove(), 1000);
 }

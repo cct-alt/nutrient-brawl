@@ -49,3 +49,29 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 
 /* 玩家受傷時畫面閃紅光 */
 .damage-flash { background-color: #ffcdd2 !important; }
+
+/* --- RPG 飄浮數字動畫 --- */
+.floating-text {
+    position: absolute;
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; /* 白色描邊讓字更清楚 */
+    pointer-events: none; /* 防止擋住點擊 */
+    animation: floatUpAndFade 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    z-index: 100;
+}
+
+@keyframes floatUpAndFade {
+    0% { opacity: 1; transform: translateY(0) scale(0.5); }
+    20% { transform: translateY(-20px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1); }
+}
+
+/* --- 血條殘影底色 --- */
+.hp-bar-bg {
+    background: #ff5252; /* 受傷時漏出的紅色殘留 */
+}
+#boss-hp-bar {
+    transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* 讓血條縮減更具彈性與動感 */
+}
+
