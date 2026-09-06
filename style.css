@@ -1,61 +1,72 @@
 * { box-sizing: border-box; font-family: 'PingFang HK', 'Helvetica Neue', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-/* 🌟 最強 iPad Safari 適配：徹底鎖死視窗，不受 Toolbar 影響 */
+/* 🌟 最強 iPad Safari 適配：徹底鎖死視窗，不受 Toolbar 與捲動回彈影響 */
 body { 
     margin: 0; padding: 0; background-color: #eef2f3; 
-    display: flex; justify-content: center; align-items: center; 
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 釘死在畫面上 */
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 死死釘在可視範圍 */
     width: 100%; height: 100%;
     overflow: hidden; 
     overscroll-behavior: none; 
-    -webkit-user-select: none; user-select: none; /* 防止反白文字干擾滑動 */
+    -webkit-user-select: none; user-select: none; /* 防止反白文字干擾 */
 }
 
-.screen { display: none; width: 100%; height: 100%; max-width: 1024px; padding: 20px; flex-direction: column; justify-content: center; align-items: center; }
+/* 🌟 畫面容器：改為從頂部開始排，確保上方血量絕對不會被切掉 */
+.screen { 
+    display: none; width: 100%; height: 100%; max-width: 1024px; margin: 0 auto;
+    padding: 15px; flex-direction: column; align-items: center; 
+    justify-content: flex-start; /* 關鍵修正：靠上對齊 */
+    overflow-y: auto; /* 確保內容過多時真的可以滾動 */
+    -webkit-overflow-scrolling: touch; /* 啟動 iOS 原生平滑滾動 */
+}
 .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.box { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 90%; max-width: 800px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); }
+
+/* 如果螢幕夠高 (直立時)，才恢復垂直置中 */
+@media (min-height: 900px) {
+    .screen { justify-content: center; }
+}
+
+.box { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 800px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); margin-bottom: 15px; }
+
 input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; outline: none; }
 .btn { width: 100%; padding: 15px; margin: 5px 0; font-size: 1.4rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2); }
 .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px rgba(0,0,0,0.2); }
+
 .primary { background: linear-gradient(135deg, #4CAF50, #8BC34A); color: white; }
 .boss { background: linear-gradient(135deg, #FF5722, #FF9800); color: white; height: 120px; }
 .multi { background: linear-gradient(135deg, #2196F3, #03A9F4); color: white; height: 120px; }
 .info { background: #fff; color: #333; border: 2px solid #FFC107; box-shadow: 0 6px 0px #FFC107;}
 .rank { background: linear-gradient(135deg, #9C27B0, #E040FB); color: white; }
 .back { background: #757575; color: white; width: auto; padding: 10px 40px;}
+
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 700px;}
-.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
 .options-grid .btn { font-size: 1.2rem; min-height: 70px; padding: 10px; display: flex; align-items: center; justify-content: center; line-height: 1.3;}
 #teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; padding: 20px;}
 
-/* 🌟 解決 iPad 滾動問題：加入 iOS 原生平滑滾動屬性 */
-.revision-grid, .rank-list, .flip-card-back { 
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; /* 強制開啟原生觸控滾動 */
-    touch-action: pan-y; /* 只允許上下滑動，防止整個畫面亂跑 */
-    overscroll-behavior: contain;
-}
-
-.revision-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-height: 65vh; width: 100%; padding: 10px; }
+/* 溫習專區 3D 卡片 */
+.revision-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; width: 100%; padding: 10px; padding-bottom: 40px;}
 .flip-card { background-color: transparent; height: 180px; perspective: 1000px; cursor: pointer; }
 .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
 .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: center; }
 .flip-card-front { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #90caf9; }
 .flip-card-front h3 { font-size: 1.6rem; color: #1565c0; margin: 0; }
-.flip-card-back { background-color: white; transform: rotateY(180deg); border-left: 6px solid #4CAF50; text-align: left; align-items: flex-start; justify-content: flex-start; font-size: 0.9rem;}
+.flip-card-back { background-color: white; transform: rotateY(180deg); border-left: 6px solid #4CAF50; text-align: left; align-items: flex-start; justify-content: flex-start; overflow-y: auto; font-size: 0.9rem;}
 .flip-card-back p { margin: 4px 0; color: #444; line-height: 1.4; }
-.leaderboard-container { display: flex; gap: 20px; width: 100%; height: 60vh; }
-.rank-box { width: 50%; height: 100%; display: flex; flex-direction: column; padding: 20px; }
+
+/* 榮譽榜 */
+.leaderboard-container { display: flex; gap: 15px; width: 100%; height: 65vh; min-height: 400px; }
+.rank-box { width: 50%; height: 100%; display: flex; flex-direction: column; padding: 15px; }
 .rank-box h3 { margin-top: 0; color: #333; font-size: 1.4rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-.rank-list { flex-grow: 1; padding: 5px; }
+.rank-list { overflow-y: auto; flex-grow: 1; padding: 5px; -webkit-overflow-scrolling: touch; }
 .rank-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; margin-bottom: 8px; padding: 10px 15px; border-radius: 10px; font-size: 1.1rem; border-left: 4px solid #ccc; }
 .rank-item.top-1 { border-left-color: #FFD700; background: #fffde7; }
 .rank-item.top-2 { border-left-color: #C0C0C0; }
 .rank-item.top-3 { border-left-color: #CD7F32; }
 .rank-item.is-me { background: linear-gradient(90deg, #4CAF50, #8BC34A); color: white; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4); transform: scale(1.02); }
 
+/* 特效動畫 */
 @keyframes epicShake { 0% { transform: translate(0,0) rotate(0deg); } 20% { transform: translate(-20px, 10px) rotate(-5deg); } 40% { transform: translate(20px, -10px) rotate(5deg); } 60% { transform: translate(-20px, -10px) rotate(-5deg); } 80% { transform: translate(20px, 10px) rotate(5deg); } 100% { transform: translate(0,0) rotate(0deg); } }
 .shake-anim { animation: epicShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 .damage-flash { background-color: #b71c1c !important; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
@@ -66,15 +77,26 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 @keyframes monsterLunge { 0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } 40% { transform: scale(2.5) translateY(50px); filter: drop-shadow(0 20px 20px rgba(0,0,0,0.6)); } 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } }
 .monster-attack-anim { animation: monsterLunge 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; position: relative; }
 
-.player-zone { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; transition: background-color 0.3s; position: relative; }
+/* 雙人對戰專區 */
+.player-zone { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px 20px; transition: background-color 0.3s; position: relative; }
 #p1-zone { transform: rotate(180deg); }
 .p1-theme { background-color: #ffebee; border-bottom: 2px solid #ef5350; }
 .p2-theme { background-color: #e3f2fd; border-top: 2px solid #42a5f5; }
 .multi-divider { height: 10px; background: #333; width: 100%; position: relative; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-.multi-timer-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; background: #FFC107; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 900; color: #fff; border: 5px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.5); text-shadow: 2px 2px 0px #d84315; }
+.multi-timer-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: #FFC107; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #fff; border: 5px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.5); text-shadow: 2px 2px 0px #d84315; }
 .multi-header { width: 100%; max-width: 700px; display: flex; justify-content: space-between; align-items: center; }
-.multi-hp { font-size: 1.5rem; font-weight: bold; color: #d32f2f; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 10px;}
-.multi-question { font-size: 1.3rem; margin: 15px 0; padding: 15px; background: #fff; border-radius: 10px; width: 100%; max-width: 700px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.multi-options { max-width: 700px; width: 100%; }
-.multi-options .btn { font-size: 1.1rem; min-height: 60px; }
+.multi-hp { font-size: 1.2rem; font-weight: bold; color: #d32f2f; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 10px;}
+.multi-question { font-size: 1.2rem; margin: 10px 0; padding: 10px; background: #fff; border-radius: 10px; width: 100%; max-width: 700px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.multi-options { max-width: 700px; width: 100%; margin-top: 5px; }
+.multi-options .btn { font-size: 1rem; min-height: 55px; }
 .multi-esc { width: auto; font-size: 1rem; padding: 5px 15px; margin: 0; }
+
+/* 🌟 iPad 橫向智慧瘦身：保證遊戲畫面一屏裝下，不需滑動！ */
+@media (max-height: 800px) {
+    .box { padding: 15px; margin-bottom: 10px; }
+    #boss-avatar { font-size: 4rem !important; margin-bottom: 0px !important; }
+    #boss-question { font-size: 1.2rem !important; margin: 5px 0; padding: 5px 0;}
+    .options-grid .btn { min-height: 55px; font-size: 1.1rem; }
+    .status-bar { padding: 10px 15px; }
+    .status-bar div { font-size: 1.2rem !important; }
+}
