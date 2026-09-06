@@ -1,77 +1,72 @@
 * { box-sizing: border-box; font-family: 'PingFang HK', 'Helvetica Neue', sans-serif; }
 body { 
-    margin: 0; padding: 0; background-color: #f0f4f8; 
+    margin: 0; padding: 0; background-color: #eef2f3; 
     display: flex; justify-content: center; align-items: center; 
-    height: 100vh; overflow: hidden; /* 防止 iPad 上下滑動 */
-    user-select: none; /* 防止選取文字 */
+    height: 100vh; overflow: hidden; user-select: none;
 }
 
-/* 畫面切換控制 */
 .screen { display: none; width: 100%; height: 100%; max-width: 800px; padding: 20px; text-align: center; flex-direction: column; justify-content: center; align-items: center; }
-.screen.active { display: flex; }
+.screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
 
-/* 共通方塊與按鈕設計 */
-.box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 80%; max-width: 400px; margin: 0 auto;}
-input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; }
-.btn { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.5rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: transform 0.1s; }
-.btn:active { transform: scale(0.95); }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-/* 按鈕顏色 */
-.primary { background: #4CAF50; color: white; }
-.boss { background: #FF5722; color: white; height: 100px; }
-.multi { background: #2196F3; color: white; height: 100px; }
-.info { background: #FFC107; color: black; }
-.rank { background: #9C27B0; color: white; }
+/* 立體質感的方塊 */
+.box { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 80%; max-width: 400px; margin: 0 auto; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); }
+
+/* 高質感按鈕 */
+input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; outline: none; transition: border 0.3s; }
+input:focus, select:focus { border-color: #4CAF50; }
+
+.btn { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.5rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.1s; box-shadow: 0 5px 0px rgba(0,0,0,0.2); }
+.btn:active { transform: translateY(5px); box-shadow: 0 0px 0px rgba(0,0,0,0.2); }
+
+.primary { background: linear-gradient(135deg, #4CAF50, #8BC34A); color: white; }
+.boss { background: linear-gradient(135deg, #FF5722, #FF9800); color: white; height: 100px; }
+.multi { background: linear-gradient(135deg, #2196F3, #03A9F4); color: white; height: 100px; }
+.info { background: #fff; color: #333; border: 2px solid #FFC107; box-shadow: 0 5px 0px #FFC107;}
+.rank { background: linear-gradient(135deg, #9C27B0, #E040FB); color: white; }
 .back { background: #757575; color: white; width: auto; padding: 10px 30px;}
 
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px;}
-
-/* 溫習卡片 */
 .card-container { display: flex; flex-wrap: wrap; gap: 15px; overflow-y: auto; max-height: 60vh; width: 100%; justify-content: center; padding: 10px;}
 .card { background: white; border-radius: 15px; padding: 15px; width: 45%; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #4CAF50;}
-.card h3 { margin-top: 0; color: #333; }
-.card p { margin: 5px 0; font-size: 0.9rem; color: #555;}
-
-/* 老師專區隱藏按鈕 */
 #teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; }
 
-/* --- 新增：打擊感與動畫效果 --- */
+/* 🌟 --- 豪華特效區 --- 🌟 */
 
-/* 病魔被擊中時的震動 */
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-15px) rotate(-5deg); }
-    50% { transform: translateX(15px) rotate(5deg); }
-    75% { transform: translateX(-15px) rotate(-5deg); }
-    100% { transform: translateX(0); }
+/* 1. 病魔重擊震動 */
+@keyframes epicShake {
+    0% { transform: translate(0,0) rotate(0deg); }
+    20% { transform: translate(-20px, 10px) rotate(-5deg); }
+    40% { transform: translate(20px, -10px) rotate(5deg); }
+    60% { transform: translate(-20px, -10px) rotate(-5deg); }
+    80% { transform: translate(20px, 10px) rotate(5deg); }
+    100% { transform: translate(0,0) rotate(0deg); }
 }
-.shake-anim { animation: shake 0.4s ease-in-out; }
+.shake-anim { animation: epicShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 
-/* 玩家受傷時畫面閃紅光 */
-.damage-flash { background-color: #ffcdd2 !important; }
+/* 2. 玩家受傷全螢幕閃紅血光 */
+.damage-flash { background-color: #b71c1c !important; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
 
-/* --- RPG 飄浮數字動畫 --- */
+/* 3. Combo 燃燒結界 (啟動時螢幕周圍著火) */
+.combo-aura { 
+    background-color: #2b0000 !important; /* 變暗紅背景 */
+    box-shadow: inset 0 0 100px #ff3d00;
+}
+.combo-aura .status-bar { border: 3px solid #FF5722; box-shadow: 0 0 20px #FF5722; }
+
+/* 4. RPG 飄浮傷害數字 */
 .floating-text {
     position: absolute;
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 900;
-    text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; /* 白色描邊讓字更清楚 */
-    pointer-events: none; /* 防止擋住點擊 */
+    text-shadow: 3px 3px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff;
+    pointer-events: none;
+    z-index: 999;
     animation: floatUpAndFade 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    z-index: 100;
 }
-
 @keyframes floatUpAndFade {
     0% { opacity: 1; transform: translateY(0) scale(0.5); }
-    20% { transform: translateY(-20px) scale(1.2); }
-    100% { opacity: 0; transform: translateY(-80px) scale(1); }
+    20% { transform: translateY(-30px) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-100px) scale(1); }
 }
-
-/* --- 血條殘影底色 --- */
-.hp-bar-bg {
-    background: #ff5252; /* 受傷時漏出的紅色殘留 */
-}
-#boss-hp-bar {
-    transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* 讓血條縮減更具彈性與動感 */
-}
-
