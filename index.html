@@ -58,7 +58,11 @@
 
         <div class="box" style="width: 100%; position: relative;" id="boss-container">
             <div style="text-align: center; margin-bottom: 15px;">
-                <div id="boss-avatar" style="font-size: 6rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); margin-bottom: 10px;">👾</div>
+                <div id="boss-avatar" style="font-size: 6rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); margin-bottom: 5px;">👾</div>
+                
+                <!-- 🌟 就是漏了下面這行數字顯示，現在補回來了！ -->
+                <h3 style="margin: 0 0 10px 0; color: #673AB7; font-size: 1.2rem;">病魔血量: <span id="boss-hp-text">1000</span></h3>
+                
                 <div class="hp-bar-bg" style="width: 100%; height: 25px; border-radius: 15px; overflow: hidden; background: #ffebee;">
                     <div id="boss-hp-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #9C27B0, #E040FB); transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);"></div>
                 </div>
