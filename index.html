@@ -19,7 +19,7 @@
         <div class="box">
             <h3>請輸入你的身分</h3>
             <select id="login-class">
-                <!-- 班別將由 app.js 自動生成 1A 到 6D -->
+                <!-- 班別將由 app.js 自動生成 -->
             </select>
             <input type="number" id="login-number" placeholder="輸入學號 (如: 15)">
             <button class="btn primary" onclick="login()">進入遊戲</button>
@@ -68,8 +68,8 @@
         <button class="btn back" onclick="forceEndGame()" style="margin-top: 15px; background: rgba(0,0,0,0.5);">逃離戰場</button>
     </div>
 
-    <!-- 🌟 豪華版雙人分割畫面 -->
-    <div id="screen-multi" class="screen" style="padding: 0; max-width: 100%; display: none; flex-direction: column;">
+    <!-- 🌟 豪華版雙人分割畫面 (修正了這裡的顯示問題) -->
+    <div id="screen-multi" class="screen" style="padding: 0; max-width: 100%;">
         
         <!-- Player 1 (上方，反轉 180 度) -->
         <div id="p1-zone" class="player-zone p1-theme">
