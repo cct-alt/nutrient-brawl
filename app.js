@@ -1,8 +1,15 @@
 window.onload = () => {
     const classSelect = document.getElementById('login-class');
+    const deleteSelect = document.getElementById('delete-class');
     classSelect.innerHTML = '<option value="">選擇班別</option>';
+    deleteSelect.innerHTML = '<option value="">選擇班別</option>';
+    
     for (let i = 1; i <= 6; i++) {
-        ['A', 'B', 'C', 'D'].forEach(c => { classSelect.innerHTML += `<option value="${i}${c}">${i}${c}</option>`; });
+        ['A', 'B', 'C', 'D'].forEach(c => { 
+            const opt = `<option value="${i}${c}">${i}${c}</option>`;
+            classSelect.innerHTML += opt; 
+            deleteSelect.innerHTML += opt;
+        });
     }
 };
 
@@ -47,7 +54,6 @@ function checkAnswer(isCorrect, btnElement) {
 }
 function playerTakeDamage() { updateStats(); const screen = document.getElementById('screen-single'); const avatar = document.getElementById('boss-avatar'); screen.classList.add('damage-flash'); avatar.innerText = "😈"; avatar.classList.add('monster-attack-anim'); screen.style.transform = "translate(10px, 10px)"; setTimeout(() => screen.style.transform = "translate(0, 0)", 100); setTimeout(() => { screen.classList.remove('damage-flash'); avatar.classList.remove('monster-attack-anim'); }, 500); }
 
-// 🌟 升級防卡死機制：無論點擊哪裡，關閉彈窗後必定切換畫面
 function endGame(result) {
     clearInterval(timer); document.getElementById('screen-single').classList.remove('combo-aura');
     if (result === "win") {
@@ -59,24 +65,10 @@ function endGame(result) {
         .then(() => { saveRecordAndGo('screen-menu'); });
     }
 }
-
-// 🌟 安全儲存功能：用 try-catch 包覆資料庫連線，就算網路擋住也能正常切換畫面
 function saveRecordAndGo(targetScreen) {
-    try {
-        const recordRef = db.ref('records').push(); 
-        recordRef.set({ class: currentUser.class, number: currentUser.number, score: score, timestamp: new Date().toLocaleString('zh-HK') })
-        .catch(err => console.log("Firebase 網路受阻，但畫面照常切換", err));
-    } catch (error) {
-        console.log("寫入失敗", error);
-    }
-    
-    // 強制執行畫面切換，絕對不卡死
-    showScreen(targetScreen);
-    if(targetScreen === 'screen-leaderboard') {
-        loadLeaderboard();
-    }
+    try { const recordRef = db.ref('records').push(); recordRef.set({ class: currentUser.class, number: currentUser.number, score: score, timestamp: new Date().toLocaleString('zh-HK') }).catch(err => console.log(err)); } catch (error) {}
+    showScreen(targetScreen); if(targetScreen === 'screen-leaderboard') { loadLeaderboard(); }
 }
-
 function forceEndGame() { clearInterval(timer); document.getElementById('screen-single').classList.remove('combo-aura'); Swal.fire('逃離戰場', '本次分數不予記錄', 'info').then(() => showScreen('screen-menu')); }
 
 // 🌟 雙人對戰模式
@@ -104,8 +96,8 @@ function handleMultiClick(playerNum, isCorrect, btnElement) {
     btnElement.style.background = isCorrect ? '#4CAF50' : '#f44336'; btnElement.style.color = 'white';
     if (isCorrect) {
         clearInterval(multiTimer); p1Locked = true; p2Locked = true; 
-        if (playerNum === 1) { p2Hp -= 100; flashMultiDamage(2); showFloatingText('-100', '#d32f2f', 'p2-zone'); document.getElementById('p1-question').innerHTML = "<span style='color:green;'>✔️ 搶答成功！給予對手 100 傷害！</span>"; document.getElementById('p2-question').innerHTML = "<span style='color:red;'>❌ 對手搶答成功！你被扣血！</span>"; } 
-        else { p1Hp -= 100; flashMultiDamage(1); showFloatingText('-100', '#d32f2f', 'p1-zone'); document.getElementById('p2-question').innerHTML = "<span style='color:green;'>✔️ 搶答成功！給予對手 100 傷害！</span>"; document.getElementById('p1-question').innerHTML = "<span style='color:red;'>❌ 對手搶答成功！你被扣血！</span>"; }
+        if (playerNum === 1) { p2Hp -= 100; flashMultiDamage(2); showFloatingText('-100', '#d32f2f', 'p2-zone'); document.getElementById('p1-question').innerHTML = "<span style='color:green;'>✔️ 搶答成功！給予對手 100 傷害！</span>"; document.getElementById('p2-question').innerHTML = "<span style='color:red;'>❌ 對手搶答！你被扣血！</span>"; } 
+        else { p1Hp -= 100; flashMultiDamage(1); showFloatingText('-100', '#d32f2f', 'p1-zone'); document.getElementById('p2-question').innerHTML = "<span style='color:green;'>✔️ 搶答成功！給予對手 100 傷害！</span>"; document.getElementById('p1-question').innerHTML = "<span style='color:red;'>❌ 對手搶答！你被扣血！</span>"; }
         updateMultiStats(); setTimeout(nextMultiQuestion, 1500);
     } else {
         if (playerNum === 1) { p1Hp -= 50; p1Locked = true; flashMultiDamage(1); showFloatingText('-50', '#1976D2', 'p1-zone'); document.getElementById('p1-question').innerText = "❌ 答錯扣 50 滴血！(等待對手)"; } 
@@ -128,8 +120,7 @@ function checkTeacher() { Swal.fire({ title: '進入老師專區', input: 'passw
 
 function loadLeaderboard() { 
     document.getElementById('lb-class-name').innerText = currentUser.class; 
-    document.getElementById('class-leaderboard').innerHTML = "<p style='text-align:center;'>載入中...</p>"; 
-    document.getElementById('grade-leaderboard').innerHTML = "<p style='text-align:center;'>載入中...</p>"; 
+    document.getElementById('class-leaderboard').innerHTML = "<p style='text-align:center;'>載入中...</p>"; document.getElementById('grade-leaderboard').innerHTML = "<p style='text-align:center;'>載入中...</p>"; 
     db.ref('records').once('value').then(snapshot => { 
         const data = snapshot.val(); 
         if (!data) { document.getElementById('class-leaderboard').innerHTML = "<p style='text-align:center;'>尚無紀錄</p>"; document.getElementById('grade-leaderboard').innerHTML = "<p style='text-align:center;'>尚無紀錄</p>"; return; } 
@@ -138,11 +129,41 @@ function loadLeaderboard() {
         const allStudents = Object.values(highestScores).sort((a, b) => b.score - a.score); const classStudents = allStudents.filter(s => s.class === currentUser.class).slice(0, 10); const gradeStudents = allStudents.slice(0, 20); 
         const renderList = (arr, elementId) => { const container = document.getElementById(elementId); container.innerHTML = ""; arr.forEach((s, idx) => { let icon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `<span style="display:inline-block;width:24px;text-align:center;">${idx+1}</span>`; let topClass = idx <= 2 ? `top-${idx+1}` : ''; let isMeClass = (s.class === currentUser.class && s.number === currentUser.number) ? 'is-me' : ''; container.innerHTML += `<div class="rank-item ${topClass} ${isMeClass}"><div>${icon} &nbsp; <b>${s.class}</b>班 <b>${s.number}</b>號 ${isMeClass ? '(你)' : ''}</div><div style="font-weight:900; font-size:1.3rem;">${s.score} <span style="font-size:0.8rem; font-weight:normal;">分</span></div></div>`; }); }; 
         renderList(classStudents, 'class-leaderboard'); renderList(gradeStudents, 'grade-leaderboard'); 
-    }).catch(err => {
-        // 如果學校網路擋住讀取，也不會卡死，會顯示無法連線
-        document.getElementById('class-leaderboard').innerHTML = "<p style='text-align:center; color:red;'>網路受阻，無法載入</p>"; 
-        document.getElementById('grade-leaderboard').innerHTML = "<p style='text-align:center; color:red;'>網路受阻，無法載入</p>";
-    }); 
+    }).catch(err => { document.getElementById('class-leaderboard').innerHTML = "<p style='text-align:center; color:red;'>網路受阻，無法載入</p>"; document.getElementById('grade-leaderboard').innerHTML = "<p style='text-align:center; color:red;'>網路受阻，無法載入</p>"; }); 
 }
-
 function exportToCSV() { db.ref('records').once('value').then(snapshot => { const data = snapshot.val(); if (!data) { Swal.fire('提示', '目前無遊玩紀錄', 'info'); return; } let csvContent = "班別,學號,分數,遊玩時間\n"; for (let key in data) { const r = data[key]; csvContent += `${r.class},${r.number},${r.score},${r.timestamp}\n`; } const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `營養大亂鬥_紀錄.csv`; link.click(); Swal.fire('成功', '紀錄已下載', 'success'); }); }
+
+// 🌟 升級版：老師一鍵刪除學生紀錄
+function deleteRecord() {
+    const dClass = document.getElementById('delete-class').value;
+    const dNum = document.getElementById('delete-number').value;
+    if (!dClass || !dNum) { Swal.fire('錯誤', '請選擇班別並輸入學號', 'error'); return; }
+
+    Swal.fire({
+        title: `確定要刪除 ${dClass}班 ${dNum}號 嗎？`, text: "刪除後將無法恢復！", icon: 'warning',
+        showCancelButton: true, confirmButtonColor: '#d32f2f', cancelButtonColor: '#757575',
+        confirmButtonText: '確定刪除', cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({title: '刪除中...', allowOutsideClick: false, didOpen: () => {Swal.showLoading()}});
+            
+            db.ref('records').once('value').then(snapshot => {
+                let deletePromises = [];
+                let count = 0;
+                // 掃描資料庫中符合該學生的紀錄
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    if (data.class === dClass && data.number === dNum) {
+                        deletePromises.push(child.ref.remove());
+                        count++;
+                    }
+                });
+
+                Promise.all(deletePromises).then(() => {
+                    if (count > 0) { Swal.fire('已刪除！', `成功刪除了 ${count} 筆遊玩紀錄。`, 'success'); } 
+                    else { Swal.fire('找不到紀錄', '該學生目前沒有任何遊玩紀錄。', 'info'); }
+                }).catch(err => { Swal.fire('錯誤', '刪除失敗，請檢查網路連線', 'error'); });
+            });
+        }
+    });
+}
