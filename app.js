@@ -31,7 +31,7 @@ function login() {
     showScreen('screen-menu');
 }
 
-// 🌟 單人模式 (改為 20 秒)
+// 🌟 單人模式
 let hp = 500, bossHp = 1000, score = 0, combo = 0, currentQ = null, timer = null, timeLeft = 20;
 function startSinglePlayer() { hp = 500; bossHp = 1000; score = 0; combo = 0; document.getElementById('boss-avatar').innerText = "👾"; updateStats(); showScreen('screen-single'); Swal.fire({ title: '病魔來襲！', text: '準備好你的營養素！', icon: 'warning', timer: 1500, showConfirmButton: false }).then(() => { nextQuestion(); }); }
 function updateStats() { document.getElementById('player-hp').innerText = hp; document.getElementById('player-score').innerText = score; document.getElementById('boss-hp-text').innerText = bossHp; const hpPercent = Math.max(0, (bossHp / 1000) * 100); document.getElementById('boss-hp-bar').style.width = hpPercent + "%"; const comboEl = document.getElementById('combo-text'); const screen = document.getElementById('screen-single'); if (combo >= 3) { comboEl.style.display = 'block'; document.getElementById('combo-count').innerText = combo; screen.classList.add('combo-aura'); } else { comboEl.style.display = 'none'; screen.classList.remove('combo-aura'); } }
@@ -44,16 +44,44 @@ function nextQuestion() {
     for (let i = ops.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ops[i], ops[j]] = [ops[j], ops[i]]; }
     ops.forEach((obj) => { const btn = document.createElement('button'); btn.className = 'btn'; btn.style.background = '#fff'; btn.style.color = '#333'; btn.style.border = '2px solid #ccc'; btn.innerText = obj.text; btn.onclick = () => checkAnswer(obj.isCorrect, btn); optionsArea.appendChild(btn); });
     
-    // 🌟 設定每題 20 秒
     timeLeft = 20; document.getElementById('question-timer').innerText = timeLeft;
-    timer = setInterval(() => { timeLeft--; document.getElementById('question-timer').innerText = timeLeft; if (timeLeft <= 0) { clearInterval(timer); hp -= 100; combo = 0; playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); optionsArea.innerHTML = "<h3 style='color:red;'>超時！病魔對你造成 100 傷害！</h3>"; setTimeout(nextQuestion, 1500); } }, 1000);
+    timer = setInterval(() => { 
+        timeLeft--; document.getElementById('question-timer').innerText = timeLeft; 
+        if (timeLeft <= 0) { 
+            clearInterval(timer); 
+            hp -= 100; combo = 0; 
+            // 🌟 超時嚴厲懲罰：扣 100 分 (分數不低於 0)
+            score -= 100; if(score < 0) score = 0; 
+            
+            playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); 
+            optionsArea.innerHTML = "<h3 style='color:red;'>超時！扣 100 滴血與 100 分！</h3>"; 
+            setTimeout(nextQuestion, 1500); 
+        } 
+    }, 1000);
 }
+
 function checkAnswer(isCorrect, btnElement) {
     clearInterval(timer); const optionsArea = document.getElementById('options-area'); const bossContainer = document.getElementById('boss-container');
-    if (isCorrect) { btnElement.style.background = '#4CAF50'; btnElement.style.color = 'white'; btnElement.style.transform = 'scale(1.05)'; combo++; let isCrit = combo >= 3; let dmg = isCrit ? 200 : 100; let basePoints = isCrit ? 200 : 100; let timeBonus = timeLeft * 10; bossHp -= dmg; score += (basePoints + timeBonus); document.getElementById('boss-avatar').innerText = "💥"; bossContainer.classList.add('shake-anim'); setTimeout(() => bossContainer.classList.remove('shake-anim'), 400); showFloatingText(`-${dmg}`, '#d32f2f', 'boss-container'); fireMagicAttack(); optionsArea.innerHTML += `<h3 style='color:green; margin:5px 0;'>命中！造成 ${dmg} 傷害！<br><span style='font-size:0.9rem; color:#FF9800;'>基礎 +${basePoints} | 極速加成 +${timeBonus}</span></h3>`; } 
-    else { btnElement.style.background = '#f44336'; btnElement.style.color = 'white'; hp -= 100; combo = 0; playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); optionsArea.innerHTML += `<h3 style='color:red; margin:5px 0;'>答錯了！扣 100 滴血！</h3>`; }
+    if (isCorrect) { 
+        btnElement.style.background = '#4CAF50'; btnElement.style.color = 'white'; btnElement.style.transform = 'scale(1.05)'; 
+        combo++; let isCrit = combo >= 3; let dmg = isCrit ? 200 : 100; let basePoints = isCrit ? 200 : 100; let timeBonus = timeLeft * 10; 
+        bossHp -= dmg; score += (basePoints + timeBonus); 
+        document.getElementById('boss-avatar').innerText = "💥"; bossContainer.classList.add('shake-anim'); setTimeout(() => bossContainer.classList.remove('shake-anim'), 400); 
+        showFloatingText(`-${dmg}`, '#d32f2f', 'boss-container'); fireMagicAttack(); 
+        optionsArea.innerHTML += `<h3 style='color:green; margin:5px 0;'>命中！造成 ${dmg} 傷害！<br><span style='font-size:0.9rem; color:#FF9800;'>基礎 +${basePoints} | 極速加成 +${timeBonus}</span></h3>`; 
+    } 
+    else { 
+        btnElement.style.background = '#f44336'; btnElement.style.color = 'white'; 
+        hp -= 100; combo = 0; 
+        // 🌟 答錯嚴厲懲罰：扣 100 分 (分數不低於 0)
+        score -= 100; if(score < 0) score = 0;
+        
+        playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); 
+        optionsArea.innerHTML += `<h3 style='color:red; margin:5px 0;'>答錯了！扣 100 滴血與 100 分！</h3>`; 
+    }
     updateStats(); setTimeout(nextQuestion, 1500);
 }
+
 function playerTakeDamage() { updateStats(); const screen = document.getElementById('screen-single'); const avatar = document.getElementById('boss-avatar'); screen.classList.add('damage-flash'); avatar.innerText = "😈"; avatar.classList.add('monster-attack-anim'); screen.style.transform = "translate(10px, 10px)"; setTimeout(() => screen.style.transform = "translate(0, 0)", 100); setTimeout(() => { screen.classList.remove('damage-flash'); avatar.classList.remove('monster-attack-anim'); }, 500); }
 
 function endGame(result) {
@@ -67,13 +95,14 @@ function endGame(result) {
         .then(() => { saveRecordAndGo('screen-menu'); });
     }
 }
+
 function saveRecordAndGo(targetScreen) {
     try { const recordRef = db.ref('records').push(); recordRef.set({ class: currentUser.class, number: currentUser.number, score: score, timestamp: new Date().toLocaleString('zh-HK') }).catch(err => console.log(err)); } catch (error) {}
     showScreen(targetScreen); if(targetScreen === 'screen-leaderboard') { loadLeaderboard(); }
 }
 function forceEndGame() { clearInterval(timer); document.getElementById('screen-single').classList.remove('combo-aura'); Swal.fire('逃離戰場', '本次分數不予記錄', 'info').then(() => showScreen('screen-menu')); }
 
-// 🌟 雙人對戰模式 (改為 20 秒)
+// 🌟 雙人對戰模式
 let p1Hp = 1000, p2Hp = 1000, multiTimer = null, multiTimeLeft = 20;
 let p1Locked = false, p2Locked = false;
 function startMultiPlayer() { p1Hp = 1000; p2Hp = 1000; updateMultiStats(); showScreen('screen-multi'); Swal.fire({ title: '⚔️ 雙人對戰', text: '請將 iPad 平放於桌面，兩人各佔一邊！', icon: 'info', timer: 2000, showConfirmButton: false }).then(() => nextMultiQuestion()); }
@@ -91,7 +120,6 @@ function nextMultiQuestion() {
         const btn2 = document.createElement('button'); btn2.className = 'btn'; btn2.style.background = '#fff'; btn2.style.color = '#333'; btn2.style.border = '2px solid #ccc'; btn2.innerText = obj.text; btn2.onclick = () => handleMultiClick(2, obj.isCorrect, btn2); p2Area.appendChild(btn2);
     });
     
-    // 🌟 設定每題 20 秒
     multiTimeLeft = 20; document.getElementById('multi-timer').innerText = multiTimeLeft;
     multiTimer = setInterval(() => { multiTimeLeft--; document.getElementById('multi-timer').innerText = multiTimeLeft; if (multiTimeLeft <= 0) { clearInterval(multiTimer); p1Hp -= 50; p2Hp -= 50; updateMultiStats(); flashMultiDamage(1); flashMultiDamage(2); document.getElementById('p1-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; document.getElementById('p2-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; setTimeout(nextMultiQuestion, 1500); } }, 1000);
 }
@@ -137,7 +165,7 @@ function loadLeaderboard() {
 }
 function exportToCSV() { db.ref('records').once('value').then(snapshot => { const data = snapshot.val(); if (!data) { Swal.fire('提示', '目前無遊玩紀錄', 'info'); return; } let csvContent = "班別,學號,分數,遊玩時間\n"; for (let key in data) { const r = data[key]; csvContent += `${r.class},${r.number},${r.score},${r.timestamp}\n`; } const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `營養大亂鬥_紀錄.csv`; link.click(); Swal.fire('成功', '紀錄已下載', 'success'); }); }
 
-// 🌟 升級版：老師一鍵刪除學生紀錄
+// 🌟 老師一鍵刪除學生紀錄
 function deleteRecord() {
     const dClass = document.getElementById('delete-class').value;
     const dNum = document.getElementById('delete-number').value;
@@ -152,14 +180,10 @@ function deleteRecord() {
             Swal.fire({title: '刪除中...', allowOutsideClick: false, didOpen: () => {Swal.showLoading()}});
             
             db.ref('records').once('value').then(snapshot => {
-                let deletePromises = [];
-                let count = 0;
+                let deletePromises = []; let count = 0;
                 snapshot.forEach(child => {
                     const data = child.val();
-                    if (data.class === dClass && data.number === dNum) {
-                        deletePromises.push(child.ref.remove());
-                        count++;
-                    }
+                    if (data.class === dClass && data.number === dNum) { deletePromises.push(child.ref.remove()); count++; }
                 });
 
                 Promise.all(deletePromises).then(() => {
