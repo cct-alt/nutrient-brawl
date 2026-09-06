@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>營養素大亂鬥 Nutrient Brawl</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 引入 Firebase (使用 v8 版本較適合初學者原生 JS 開發) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -18,10 +17,8 @@
             <h3>請輸入你的身分</h3>
             <select id="login-class">
                 <option value="">選擇班別</option>
-                <option value="1A">1A</option>
-                <option value="1B">1B</option>
-                <option value="1C">1C</option>
-                <option value="1D">1D</option>
+                <option value="1A">1A</option><option value="1B">1B</option>
+                <option value="1C">1C</option><option value="1D">1D</option>
             </select>
             <input type="number" id="login-number" placeholder="輸入學號 (如: 15)">
             <button class="btn primary" onclick="login()">進入遊戲</button>
@@ -32,12 +29,11 @@
     <div id="screen-menu" class="screen">
         <h1 id="welcome-text">歡迎！</h1>
         <div class="menu-grid">
-            <button class="btn boss" onclick="showScreen('screen-single')">⚔️ 單人模式 (病魔保衛戰)</button>
-            <button class="btn multi" onclick="showScreen('screen-multi')">👯 雙人對戰 (同機對抗)</button>
+            <button class="btn boss" onclick="startSinglePlayer()">⚔️ 單人模式 (病魔保衛戰)</button>
+            <button class="btn multi" onclick="alert('老師，單機雙人模式可於下階段擴充喔！')">👯 雙人對戰 (同機對抗)</button>
             <button class="btn info" onclick="showScreen('screen-revision'); loadRevision()">📖 溫習專區 (營養圖鑑)</button>
             <button class="btn rank" onclick="showScreen('screen-leaderboard'); loadLeaderboard()">🏆 榮譽榜</button>
         </div>
-        <!-- 老師專區隱藏入口 (角落的小圖示) -->
         <div id="teacher-entry" onclick="checkTeacher()">⚙️ 老師專區</div>
     </div>
 
@@ -48,8 +44,50 @@
         <button class="btn back" onclick="showScreen('screen-menu')">返回主選單</button>
     </div>
 
-    <!-- 4. 遊戲準備/遊玩畫面 (這部分我們在下一階段詳細寫) -->
-    <!-- ... 單人模式、雙人模式、老師專區 ... -->
+    <!-- 4. 單人遊戲畫面 (Boss Rush) -->
+    <div id="screen-single" class="screen">
+        <div class="box" style="width: 100%; max-width: 600px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold;">
+                <span style="color: #e53935;">❤️ 血量: <span id="player-hp">1000</span></span>
+                <span style="color: #4CAF50;">⭐ 分數: <span id="player-score">0</span></span>
+                <span style="color: #1976D2;">⏱️ 時間: <span id="question-timer">10</span>s</span>
+            </div>
+            <h3 id="combo-text" style="color: #FF5722; display: none;">🔥 連擊 x<span id="combo-count">0</span>! 分數加倍!</h3>
+        </div>
+        <div class="box" style="width: 100%; max-width: 600px; background: #fff3e0;">
+            <h2 id="boss-question">準備好迎戰病魔了嗎？</h2>
+            <div id="options-area" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <!-- 選項按鈕由 JS 生成 -->
+            </div>
+        </div>
+        <button class="btn back" onclick="endGame()" style="margin-top: 20px;">放棄戰鬥</button>
+    </div>
+
+    <!-- 5. 榮譽榜 -->
+    <div id="screen-leaderboard" class="screen">
+        <h2>🏆 榮譽榜</h2>
+        <div class="menu-grid" style="max-width: 800px; text-align: left;">
+            <div class="box" style="width: 100%;">
+                <h3>👑 本班前 10 名 (<span id="lb-class-name"></span>)</h3>
+                <ol id="class-leaderboard"></ol>
+            </div>
+            <div class="box" style="width: 100%;">
+                <h3>🌟 全級前 20 名</h3>
+                <ol id="grade-leaderboard"></ol>
+            </div>
+        </div>
+        <button class="btn back" onclick="showScreen('screen-menu')">返回主選單</button>
+    </div>
+
+    <!-- 6. 老師專區 -->
+    <div id="screen-teacher" class="screen">
+        <h2>⚙️ 老師專區後台</h2>
+        <div class="box">
+            <p>點擊下方按鈕，系統會自動將所有學生的遊玩紀錄整理成 Excel (CSV) 檔案下載。</p>
+            <button class="btn primary" onclick="exportToCSV()">📊 下載全校遊玩紀錄</button>
+            <button class="btn back" onclick="showScreen('screen-menu')">返回主選單</button>
+        </div>
+    </div>
 
     <script src="data.js"></script>
     <script src="app.js"></script>
