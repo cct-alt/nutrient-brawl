@@ -1,36 +1,14 @@
-* { box-sizing: border-box; font-family: 'PingFang HK', 'Helvetica Neue', sans-serif; }
-body { 
-    margin: 0; padding: 0; background-color: #f0f4f8; 
-    display: flex; justify-content: center; align-items: center; 
-    height: 100vh; overflow: hidden; /* 防止 iPad 上下滑動 */
-    user-select: none; /* 防止選取文字 */
+/* --- 新增：打擊感與動畫效果 --- */
+
+/* 病魔被擊中時的震動 */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-15px) rotate(-5deg); }
+    50% { transform: translateX(15px) rotate(5deg); }
+    75% { transform: translateX(-15px) rotate(-5deg); }
+    100% { transform: translateX(0); }
 }
+.shake-anim { animation: shake 0.4s ease-in-out; }
 
-/* 畫面切換控制 */
-.screen { display: none; width: 100%; height: 100%; max-width: 800px; padding: 20px; text-align: center; flex-direction: column; justify-content: center; align-items: center; }
-.screen.active { display: flex; }
-
-/* 共通方塊與按鈕設計 */
-.box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 80%; max-width: 400px; margin: 0 auto;}
-input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; }
-.btn { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.5rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: transform 0.1s; }
-.btn:active { transform: scale(0.95); }
-
-/* 按鈕顏色 */
-.primary { background: #4CAF50; color: white; }
-.boss { background: #FF5722; color: white; height: 100px; }
-.multi { background: #2196F3; color: white; height: 100px; }
-.info { background: #FFC107; color: black; }
-.rank { background: #9C27B0; color: white; }
-.back { background: #757575; color: white; width: auto; padding: 10px 30px;}
-
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px;}
-
-/* 溫習卡片 */
-.card-container { display: flex; flex-wrap: wrap; gap: 15px; overflow-y: auto; max-height: 60vh; width: 100%; justify-content: center; padding: 10px;}
-.card { background: white; border-radius: 15px; padding: 15px; width: 45%; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #4CAF50;}
-.card h3 { margin-top: 0; color: #333; }
-.card p { margin: 5px 0; font-size: 0.9rem; color: #555;}
-
-/* 老師專區隱藏按鈕 */
-#teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; }
+/* 玩家受傷時畫面閃紅光 */
+.damage-flash { background-color: #ffcdd2 !important; }
