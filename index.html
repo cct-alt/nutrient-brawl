@@ -19,9 +19,7 @@
         <div class="box">
             <h3>請輸入你的身分</h3>
             <select id="login-class">
-                <option value="">選擇班別</option>
-                <option value="1A">1A</option><option value="1B">1B</option>
-                <option value="1C">1C</option><option value="1D">1D</option>
+                <!-- 班別將由 app.js 自動生成 1A 到 6D -->
             </select>
             <input type="number" id="login-number" placeholder="輸入學號 (如: 15)">
             <button class="btn primary" onclick="login()">進入遊戲</button>
@@ -32,20 +30,21 @@
         <h1 id="welcome-text" style="font-size: 2.5rem; margin-bottom: 30px;">歡迎！</h1>
         <div class="menu-grid">
             <button class="btn boss" onclick="startSinglePlayer()">⚔️ 單人模式<br><span style="font-size: 1rem;">(病魔保衛戰)</span></button>
-            <button class="btn multi" onclick="Swal.fire('開發中', '雙人對戰模式準備中！', 'info')">👯 雙人對戰<br><span style="font-size: 1rem;">(同機對抗)</span></button>
+            <button class="btn multi" onclick="startMultiPlayer()">👯 雙人對戰<br><span style="font-size: 1rem;">(同機對抗)</span></button>
             <button class="btn info" onclick="showScreen('screen-revision'); loadRevision()">📖 溫習專區<br><span style="font-size: 1rem;">(3D 營養圖鑑)</span></button>
             <button class="btn rank" onclick="showScreen('screen-leaderboard'); loadLeaderboard()">🏆 榮譽榜<br><span style="font-size: 1rem;">(神人排名)</span></button>
         </div>
         <div id="teacher-entry" onclick="checkTeacher()">⚙️ 老師專區</div>
     </div>
 
-    <!-- 豪華版 3D 溫習專區 -->
+    <!-- 溫習專區 -->
     <div id="screen-revision" class="screen">
         <h2>📖 3D 營養圖鑑 <span style="font-size: 1rem; font-weight: normal; color: #555;">(點擊卡片翻面)</span></h2>
         <div id="revision-content" class="revision-grid"></div>
         <button class="btn back" onclick="showScreen('screen-menu')">返回主選單</button>
     </div>
 
+    <!-- 單人遊戲畫面 -->
     <div id="screen-single" class="screen boss-arena" style="transition: all 0.5s;">
         <div class="box status-bar" style="width: 100%; margin-bottom: 10px; position: relative;">
             <div style="display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: bold;">
@@ -55,14 +54,10 @@
             </div>
             <h3 id="combo-text" style="color: #FF5722; display: none; margin: 5px 0 0 0; text-shadow: 0 0 10px #FFC107;">🔥 連擊 x<span id="combo-count">0</span>! 傷害加倍!</h3>
         </div>
-
         <div class="box" style="width: 100%; position: relative;" id="boss-container">
             <div style="text-align: center; margin-bottom: 15px;">
                 <div id="boss-avatar" style="font-size: 6rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); margin-bottom: 5px;">👾</div>
-                
-                <!-- 🌟 就是漏了下面這行數字顯示，現在補回來了！ -->
                 <h3 style="margin: 0 0 10px 0; color: #673AB7; font-size: 1.2rem;">病魔血量: <span id="boss-hp-text">1000</span></h3>
-                
                 <div class="hp-bar-bg" style="width: 100%; height: 25px; border-radius: 15px; overflow: hidden; background: #ffebee;">
                     <div id="boss-hp-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #9C27B0, #E040FB); transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);"></div>
                 </div>
@@ -73,7 +68,36 @@
         <button class="btn back" onclick="forceEndGame()" style="margin-top: 15px; background: rgba(0,0,0,0.5);">逃離戰場</button>
     </div>
 
-    <!-- 豪華雙欄電競榮譽榜 -->
+    <!-- 🌟 豪華版雙人分割畫面 -->
+    <div id="screen-multi" class="screen" style="padding: 0; max-width: 100%; display: none; flex-direction: column;">
+        
+        <!-- Player 1 (上方，反轉 180 度) -->
+        <div id="p1-zone" class="player-zone p1-theme">
+            <div class="multi-header">
+                <span class="multi-hp">❤️ 玩家 1 血量: <span id="p1-hp">1000</span></span>
+                <button class="btn back multi-esc" onclick="forceEndMulti()">逃離</button>
+            </div>
+            <h3 id="p1-question" class="multi-question">讀取中...</h3>
+            <div id="p1-options" class="options-grid multi-options"></div>
+        </div>
+
+        <!-- 中間分隔線與計時器 -->
+        <div class="multi-divider">
+            <div id="multi-timer" class="multi-timer-circle">10</div>
+        </div>
+
+        <!-- Player 2 (下方，正常顯示) -->
+        <div id="p2-zone" class="player-zone p2-theme">
+            <h3 id="p2-question" class="multi-question">讀取中...</h3>
+            <div id="p2-options" class="options-grid multi-options"></div>
+            <div class="multi-header" style="margin-top: 10px;">
+                <span class="multi-hp">❤️ 玩家 2 血量: <span id="p2-hp">1000</span></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 榮譽榜 -->
     <div id="screen-leaderboard" class="screen">
         <h2 style="margin-bottom: 5px;">🏆 榮譽榜</h2>
         <div class="leaderboard-container">
