@@ -4,17 +4,12 @@ const firebaseConfig = {
     authDomain: "nutrient-brawl.firebaseapp.com",
     projectId: "nutrient-brawl",
     storageBucket: "nutrient-brawl.firebasestorage.app",
-    messagingSenderId: "764517744885",
     appId: "1:764517744885:web:b3cba8b2662379f0a445bc",
     databaseURL: "https://nutrient-brawl-default-rtdb.firebaseio.com"
 };
-
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const db = firebase.database();
 
-// ===== 2. 基礎設定與登入 =====
 let currentUser = { class: "", number: "" };
 
 function showScreen(screenId) {
@@ -26,13 +21,12 @@ function login() {
     const cls = document.getElementById('login-class').value;
     const num = document.getElementById('login-number').value;
     if (!cls || !num) { alert("請選擇班別並輸入學號！"); return; }
-    currentUser.class = cls; 
-    currentUser.number = num;
+    currentUser.class = cls; currentUser.number = num;
     document.getElementById('welcome-text').innerText = `歡迎！${cls}班 ${num}號`;
     showScreen('screen-menu');
 }
 
-// ===== 3. 單人遊戲核心 (升級版打擊機制) =====
+// ===== 3. 單人遊戲核心 (加入極速加成機制) =====
 let hp = 500;       
 let bossHp = 1000;  
 let score = 0, combo = 0;
@@ -66,12 +60,8 @@ function updateStats() {
 function nextQuestion() {
     clearInterval(timer);
     
-    if (hp <= 0) { 
-        endGame("lose"); return; 
-    }
-    if (bossHp <= 0) { 
-        endGame("win"); return; 
-    }
+    if (hp <= 0) { endGame("lose"); return; }
+    if (bossHp <= 0) { endGame("win"); return; }
 
     document.getElementById('boss-avatar').innerText = "👾"; 
 
@@ -106,7 +96,7 @@ function nextQuestion() {
 }
 
 function checkAnswer(selectedIndex, btnElement) {
-    clearInterval(timer);
+    clearInterval(timer); // 停止計時，鎖定剩餘時間
     const optionsArea = document.getElementById('options-area');
     const bossContainer = document.getElementById('boss-container');
     
@@ -115,16 +105,21 @@ function checkAnswer(selectedIndex, btnElement) {
         combo++;
         let isCrit = combo >= 3;
         let dmg = isCrit ? 400 : 200; 
-        let points = isCrit ? 200 : 100;
+        
+        // --- 核心修改：計算極速加成 ---
+        let basePoints = isCrit ? 200 : 100;
+        let timeBonus = timeLeft * 10; // 剩幾秒就送幾乘10分
+        let totalPoints = basePoints + timeBonus;
         
         bossHp -= dmg;
-        score += points;
-        
+        score += totalPoints; // 加上總分
+
         document.getElementById('boss-avatar').innerText = "💥"; 
         bossContainer.classList.add('shake-anim'); 
         setTimeout(() => bossContainer.classList.remove('shake-anim'), 400);
 
-        optionsArea.innerHTML += `<h3 style='color:green;'>命中！對病魔造成 ${dmg} 點傷害！ (+${points}分)</h3>`;
+        // 畫面顯示分數結構，讓學生知道快有快的好處
+        optionsArea.innerHTML += `<h3 style='color:green; line-height: 1.4;'>命中！造成 ${dmg} 傷害！<br><span style='font-size:1rem; color:#FF9800;'>基礎 +${basePoints} | 極速加成 +${timeBonus}</span></h3>`;
     } else {
         btnElement.style.background = '#f44336'; btnElement.style.color = 'white';
         hp -= 100;
@@ -151,7 +146,7 @@ function endGame(result) {
     if (result === "win") {
         const bonus = hp * 2;
         score += bonus;
-        alert(`🎉 恭喜破關！成功擊敗病魔！\n剩餘血量獎勵加成：+${bonus}分\n【最終總分：${score} 分】`);
+        alert(`🎉 恭喜破關！成功擊敗病魔！\n血量獎勵：+${bonus}分\n【最終總分：${score} 分】`);
     } else {
         alert(`💀 挑戰失敗！你被病魔打敗了...\n【最終總分：${score} 分】\n去溫習專區看看再來挑戰吧！`);
     }
@@ -194,8 +189,10 @@ function loadLeaderboard() {
     document.getElementById('lb-class-name').innerText = currentUser.class;
     document.getElementById('class-leaderboard').innerHTML = "載入中..."; 
     document.getElementById('grade-leaderboard').innerHTML = "載入中...";
+    
     db.ref('records').once('value').then(snapshot => {
-        const data = snapshot.val(); if (!data) return;
+        const data = snapshot.val();
+        if (!data) return;
         const highestScores = {};
         for (let key in data) {
             const r = data[key]; const studentId = `${r.class}_${r.number}`;
