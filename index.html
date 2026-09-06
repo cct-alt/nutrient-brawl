@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>營養素大亂鬥 Nutrient Brawl</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Firebase (使用 v8 版本較適合初學者原生 JS 開發) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+    <!-- 1. 登入畫面 -->
+    <div id="screen-login" class="screen active">
+        <h1>🦠 營養素大亂鬥</h1>
+        <div class="box">
+            <h3>請輸入你的身分</h3>
+            <select id="login-class">
+                <option value="">選擇班別</option>
+                <option value="1A">1A</option>
+                <option value="1B">1B</option>
+                <option value="1C">1C</option>
+                <option value="1D">1D</option>
+            </select>
+            <input type="number" id="login-number" placeholder="輸入學號 (如: 15)">
+            <button class="btn primary" onclick="login()">進入遊戲</button>
+        </div>
+    </div>
+
+    <!-- 2. 主選單畫面 -->
+    <div id="screen-menu" class="screen">
+        <h1 id="welcome-text">歡迎！</h1>
+        <div class="menu-grid">
+            <button class="btn boss" onclick="showScreen('screen-single')">⚔️ 單人模式 (病魔保衛戰)</button>
+            <button class="btn multi" onclick="showScreen('screen-multi')">👯 雙人對戰 (同機對抗)</button>
+            <button class="btn info" onclick="showScreen('screen-revision'); loadRevision()">📖 溫習專區 (營養圖鑑)</button>
+            <button class="btn rank" onclick="showScreen('screen-leaderboard'); loadLeaderboard()">🏆 榮譽榜</button>
+        </div>
+        <!-- 老師專區隱藏入口 (角落的小圖示) -->
+        <div id="teacher-entry" onclick="checkTeacher()">⚙️ 老師專區</div>
+    </div>
+
+    <!-- 3. 溫習專區 -->
+    <div id="screen-revision" class="screen">
+        <h2>📖 營養圖鑑</h2>
+        <div id="revision-content" class="card-container"></div>
+        <button class="btn back" onclick="showScreen('screen-menu')">返回主選單</button>
+    </div>
+
+    <!-- 4. 遊戲準備/遊玩畫面 (這部分我們在下一階段詳細寫) -->
+    <!-- ... 單人模式、雙人模式、老師專區 ... -->
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
