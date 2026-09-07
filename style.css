@@ -1,10 +1,7 @@
 * { box-sizing: border-box; font-family: 'PingFang HK', 'Helvetica Neue', sans-serif; -webkit-tap-highlight-color: transparent; }
 
 /* 🌟 蘋果專屬解法：精準計算 Safari 工具列扣除後的高度 */
-html, body {
-    height: 100%; /* Fallback */
-    height: -webkit-fill-available;
-}
+html, body { height: 100%; height: -webkit-fill-available; }
 
 body { 
     margin: 0; padding: 0; background-color: #eef2f3; 
@@ -12,7 +9,7 @@ body {
     width: 100vw; overflow: hidden; overscroll-behavior: none; user-select: none;
 }
 
-/* 🌟 橫向警告遮罩 */
+/* 橫向警告遮罩 */
 #orientation-warning {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.95); color: white; z-index: 999999;
@@ -20,33 +17,26 @@ body {
 }
 #orientation-warning h2 { font-size: 2.5rem; margin: 10px 0; color: #FFC107; }
 #orientation-warning p { font-size: 1.5rem; }
+@media screen and (orientation: landscape) { #orientation-warning { display: flex; } }
 
-@media screen and (orientation: landscape) {
-    #orientation-warning { display: flex; }
-}
-
-/* 🌟 終極防遮擋設計：從上往下排，強制預留 60px 頂部空間，並允許內部滑動 */
+/* 🌟 終極排版：標題置頂、按鈕置底、外層絕對不滾動 */
 .screen { 
-    display: none; width: 100%; height: 100%; max-width: 800px; margin: 0 auto;
-    /* 關鍵 1：padding-top 設為 60px 以上，避開所有的劉海與 Toolbar */
-    padding: calc(env(safe-area-inset-top, 0px) + 60px) 20px 40px 20px; 
+    display: none; width: 100%; height: 100%; max-width: 600px; 
+    padding: calc(env(safe-area-inset-top, 0px) + 30px) 20px calc(env(safe-area-inset-bottom, 0px) + 20px) 20px; 
     flex-direction: column; 
-    /* 關鍵 2：不能用 center，改用 flex-start 保證頂部永遠對齊安全區 */
-    justify-content: flex-start; 
+    justify-content: flex-start; /* 確保內容永遠從最頂端開始往下排，不被切頭 */
     align-items: center; 
-    /* 關鍵 3：內容太多時允許畫面內部滾動 */
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden; /* 外層鎖死不滑動 */
 }
 .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-/* 為了美觀，加上 margin: auto 讓畫面在螢幕夠長時依然能微調置中 */
-.box, .menu-grid, .revision-grid, .leaderboard-container { margin-top: auto; margin-bottom: auto; }
+/* 讓選單或單人遊戲等內容較少時自動置中 */
+.box, .menu-grid { margin-top: auto; margin-bottom: auto; }
 
-.box { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 600px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); }
+.box { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); }
 input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; outline: none; }
-.btn { width: 100%; padding: 15px; margin: 5px 0; font-size: 1.4rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2); }
+.btn { width: 100%; padding: 15px; margin: 5px 0; font-size: 1.4rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2); flex-shrink: 0; /* 確保按鈕不會被擠壓變形 */ }
 .btn:active { transform: translateY(6px); box-shadow: 0 0px 0px rgba(0,0,0,0.2); }
 
 .primary { background: linear-gradient(135deg, #4CAF50, #8BC34A); color: white; }
@@ -54,14 +44,23 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 .multi { background: linear-gradient(135deg, #2196F3, #03A9F4); color: white; height: 120px; }
 .info { background: #fff; color: #333; border: 2px solid #FFC107; box-shadow: 0 6px 0px #FFC107;}
 .rank { background: linear-gradient(135deg, #9C27B0, #E040FB); color: white; }
-.back { background: #757575; color: white; width: auto; padding: 10px 40px;}
+.back { background: #757575; color: white; width: auto; padding: 10px 40px; margin-top: 15px;}
 
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; }
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; width: 100%; }
 .options-grid .btn { font-size: 1.2rem; min-height: 70px; padding: 10px; display: flex; align-items: center; justify-content: center; line-height: 1.3;}
 #teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; padding: 20px;}
 
-.revision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: 65vh; width: 100%; padding: 10px; }
+/* 🌟 修正 3D 溫習卡片區：現在只有卡片區能滾動，按鈕會乖乖待在下面 */
+.revision-grid { 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+    width: 100%; 
+    flex-grow: 1; /* 吸滿中間剩餘的所有空間 */
+    min-height: 0; /* Flexbox 滾動魔法屬性 */
+    padding: 10px; 
+    overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    align-content: flex-start; /* 內部卡片從最上面開始排 */
+}
 .flip-card { background-color: transparent; height: 180px; perspective: 1000px; cursor: pointer; }
 .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -71,16 +70,23 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 .flip-card-back { background-color: white; transform: rotateY(180deg); border-left: 6px solid #4CAF50; text-align: left; align-items: flex-start; justify-content: flex-start; font-size: 0.9rem; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;}
 .flip-card-back p { margin: 4px 0; color: #444; line-height: 1.4; }
 
-.leaderboard-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; height: 60vh; min-height: 400px; }
+/* 排行榜直立優化：同樣套用防擠壓設計 */
+.leaderboard-container { 
+    display: flex; flex-direction: column; gap: 15px; 
+    width: 100%; 
+    flex-grow: 1; /* 吸滿中間剩餘的所有空間 */
+    min-height: 0; /* Flexbox 滾動魔法屬性 */
+}
 .rank-box { width: 100%; height: 50%; display: flex; flex-direction: column; padding: 15px; }
-.rank-box h3 { margin-top: 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-.rank-list { flex-grow: 1; padding: 5px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.rank-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; margin-bottom: 8px; padding: 10px; border-radius: 10px; font-size: 1.1rem; border-left: 4px solid #ccc; }
+.rank-box h3 { margin-top: 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; flex-shrink: 0; }
+.rank-list { flex-grow: 1; padding: 5px; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.rank-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; margin-bottom: 8px; padding: 10px; border-radius: 10px; font-size: 1.1rem; border-left: 4px solid #ccc; flex-shrink: 0; }
 .rank-item.top-1 { border-left-color: #FFD700; background: #fffde7; }
 .rank-item.top-2 { border-left-color: #C0C0C0; }
 .rank-item.top-3 { border-left-color: #CD7F32; }
 .rank-item.is-me { background: linear-gradient(90deg, #4CAF50, #8BC34A); color: white; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4); transform: scale(1.02); }
 
+/* 特效 */
 @keyframes epicShake { 0% { transform: translate(0,0) rotate(0deg); } 20% { transform: translate(-10px, 5px) rotate(-3deg); } 40% { transform: translate(10px, -5px) rotate(3deg); } 60% { transform: translate(-10px, -5px) rotate(-3deg); } 80% { transform: translate(10px, 5px) rotate(3deg); } 100% { transform: translate(0,0) rotate(0deg); } }
 .shake-anim { animation: epicShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 .damage-flash { background-color: #b71c1c !important; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
