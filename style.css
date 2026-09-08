@@ -58,7 +58,7 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 #teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; padding: 20px;}
 
 /* 溫習專區 3D 卡片 */
-.revision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; flex: 1; min-height: 0; height: 0; padding: 5px; padding-bottom: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; align-content: flex-start; }
+.revision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; flex: 1; min-height: 0; padding: 5px; padding-bottom: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; align-content: flex-start; }
 .flip-card { background-color: transparent; height: 180px; perspective: 1000px; cursor: pointer; }
 .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -68,9 +68,11 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 .flip-card-back { background-color: white; transform: rotateY(180deg); border-left: 6px solid #4CAF50; text-align: left; align-items: flex-start; justify-content: flex-start; font-size: 0.9rem; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;}
 .flip-card-back p { margin: 4px 0; color: #444; line-height: 1.4; }
 
-/* 🌟 終極滑動殺招：排行榜絕對定位法 */
+/* 🌟 終極滑動殺招：放棄 Flexbox，改用最強的 CSS Grid 網格系統！保證 100% 高度不為零 */
 .leaderboard-container { 
-    display: flex; flex-direction: column; gap: 15px; 
+    display: grid; 
+    grid-template-rows: 1fr 1fr; /* 強制上下平分一半高度 */
+    gap: 15px; 
     width: 100%; max-width: 600px; 
     flex: 1; /* 吸滿剩下空間 */
     min-height: 0; 
@@ -78,19 +80,16 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 }
 .rank-box { 
     width: 100%; 
-    flex: 1; /* 上下兩個框框各佔 50% 高度 */
+    height: 100%; /* 填滿 Grid 切出來的格子 */
+    display: flex; flex-direction: column; 
     padding: 15px; 
-    margin-bottom: 0; 
-    position: relative; /* 🌟 作為內部滑動區的基準 */
-    overflow: hidden; /* 防止內容漏出去 */
+    margin: 0; 
+    overflow: hidden; /* 防止撐破格子 */
 }
-.rank-box h3 { margin: 0 0 10px 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; height: 30px; line-height: 30px;}
+.rank-box h3 { margin: 0 0 10px 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; flex-shrink: 0; }
 .rank-list { 
-    position: absolute; /* 🌟 脫離 Flex 束縛，直接釘在框框內 */
-    top: 55px; /* 避開標題 */
-    bottom: 15px; 
-    left: 15px; 
-    right: 15px; 
+    flex: 1; 
+    min-height: 0; /* 🌟 啟動內層滾動的關鍵魔法屬性 */
     padding-right: 5px;
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
@@ -104,4 +103,25 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 /* 特效 */
 @keyframes epicShake { 0% { transform: translate(0,0) rotate(0deg); } 20% { transform: translate(-10px, 5px) rotate(-3deg); } 40% { transform: translate(10px, -5px) rotate(3deg); } 60% { transform: translate(-10px, -5px) rotate(-3deg); } 80% { transform: translate(10px, 5px) rotate(3deg); } 100% { transform: translate(0,0) rotate(0deg); } }
 .shake-anim { animation: epicShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-.damage-flash { background-color:
+.damage-flash { background-color: #b71c1c !important; box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
+.combo-aura { background-color: #2b0000 !important; box-shadow: inset 0 0 100px #ff3d00; }
+.combo-aura .status-bar { border: 3px solid #FF5722; box-shadow: 0 0 20px #FF5722; }
+.floating-text { position: absolute; font-size: 3rem; font-weight: 900; text-shadow: 3px 3px 0 #fff, -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff; pointer-events: none; z-index: 999; animation: floatUpAndFade 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+@keyframes floatUpAndFade { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 20% { transform: translateY(-30px) scale(1.3); } 100% { opacity: 0; transform: translateY(-100px) scale(1); } }
+@keyframes monsterLunge { 0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } 40% { transform: scale(2.5) translateY(50px); filter: drop-shadow(0 20px 20px rgba(0,0,0,0.6)); } 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } }
+.monster-attack-anim { animation: monsterLunge 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; position: relative; }
+
+/* 雙人對戰 */
+#screen-multi { padding: 0 !important; }
+.player-zone { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px 20px; transition: background-color 0.3s; position: relative; overflow: hidden; }
+#p1-zone { transform: rotate(180deg); }
+.p1-theme { background-color: #ffebee; border-bottom: 2px solid #ef5350; }
+.p2-theme { background-color: #e3f2fd; border-top: 2px solid #42a5f5; }
+.multi-divider { height: 10px; background: #333; width: 100%; position: relative; z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.5); flex-shrink: 0;}
+.multi-timer-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: #FFC107; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: #fff; border: 5px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.5); text-shadow: 2px 2px 0px #d84315; }
+.multi-header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
+.multi-hp { font-size: 1.2rem; font-weight: bold; color: #d32f2f; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 10px;}
+.multi-question { font-size: 1.2rem; margin: 10px 0; padding: 10px; background: #fff; border-radius: 10px; width: 100%; max-width: 600px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-shrink: 0;}
+.multi-options { max-width: 600px; width: 100%; margin-top: 5px; flex-shrink: 0;}
+.multi-options .btn { font-size: 1rem; min-height: 55px; }
+.multi-esc { width: auto; font-size: 1rem; padding: 5px 15px; margin: 0; }
