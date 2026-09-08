@@ -1,14 +1,10 @@
 * { box-sizing: border-box; font-family: 'PingFang HK', 'Helvetica Neue', sans-serif; -webkit-tap-highlight-color: transparent; }
 
-/* 🌟 蘋果專屬解法：精準計算 Safari 工具列扣除後的高度 */
-html, body {
-    height: 100%;
-    height: -webkit-fill-available;
-}
-
+/* 🌟 釘死背景，防止整個 App 彈跳 */
+html, body { height: 100%; height: -webkit-fill-available; }
 body { 
     margin: 0; padding: 0; background-color: #eef2f3; 
-    display: flex; justify-content: center; align-items: center; 
+    position: fixed; inset: 0; /* 死死釘在螢幕上 */
     width: 100vw; overflow: hidden; overscroll-behavior: none; user-select: none;
 }
 
@@ -20,26 +16,25 @@ body {
 }
 #orientation-warning h2 { font-size: 2.5rem; margin: 10px 0; color: #FFC107; }
 #orientation-warning p { font-size: 1.5rem; }
+@media screen and (orientation: landscape) { #orientation-warning { display: flex; } }
 
-@media screen and (orientation: landscape) {
-    #orientation-warning { display: flex; }
-}
-
-/* 🌟 排版基底：加入 overflow: hidden 禁止外層滾動，強迫內層滾動 */
+/* 🌟 關鍵解法：讓整個畫面變成可順暢滾動的長網頁，保證從頂部開始排 */
 .screen { 
     display: none; width: 100%; height: 100%; max-width: 800px; margin: 0 auto;
-    padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 20px 20px; 
+    padding: calc(env(safe-area-inset-top, 0px) + 30px) 20px 40px 20px; 
     flex-direction: column; 
-    justify-content: flex-start; 
+    justify-content: flex-start; /* 絕對不能用 Center，強迫從頭排 */
     align-items: center; 
-    overflow: hidden; /* 關鍵：禁止外層滾動 */
+    overflow-y: auto; /* 整個畫面自然往下滾動 */
+    -webkit-overflow-scrolling: touch; /* 原生滑順手感 */
 }
 .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
+/* 短畫面才需要置中 */
 #screen-login, #screen-menu, #screen-teacher { justify-content: center; }
-#screen-single { overflow-y: auto; -webkit-overflow-scrolling: touch; } /* 戰鬥畫面可以滾動以防太擠 */
 
+/* 共通方塊設定 */
 .box { background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 600px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.5); margin-bottom: 15px; flex-shrink: 0;}
 input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 10px; outline: none; }
 .btn { width: 100%; padding: 15px; margin: 5px 0; font-size: 1.4rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.1s; box-shadow: 0 6px 0px rgba(0,0,0,0.2); flex-shrink: 0; }
@@ -55,10 +50,9 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; flex-shrink: 0; }
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; width: 100%; }
 .options-grid .btn { font-size: 1.2rem; min-height: 70px; padding: 10px; display: flex; align-items: center; justify-content: center; line-height: 1.3;}
-#teacher-entry { position: absolute; bottom: 20px; right: 20px; color: #ccc; cursor: pointer; font-size: 0.8rem; padding: 20px;}
 
-/* 溫習專區 3D 卡片 */
-.revision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; flex: 1; min-height: 0; padding: 5px; padding-bottom: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; align-content: flex-start; }
+/* 🌟 溫習專區 3D 卡片：拔除內部滾軸，讓它隨著網頁自然往下長 */
+.revision-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; width: 100%; max-width: 600px; height: auto; padding: 5px; padding-bottom: 15px; }
 .flip-card { background-color: transparent; height: 180px; perspective: 1000px; cursor: pointer; }
 .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
 .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -68,33 +62,12 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 .flip-card-back { background-color: white; transform: rotateY(180deg); border-left: 6px solid #4CAF50; text-align: left; align-items: flex-start; justify-content: flex-start; font-size: 0.9rem; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;}
 .flip-card-back p { margin: 4px 0; color: #444; line-height: 1.4; }
 
-/* 🌟 終極滑動殺招：放棄 Flexbox，改用最強的 CSS Grid 網格系統！保證 100% 高度不為零 */
-.leaderboard-container { 
-    display: grid; 
-    grid-template-rows: 1fr 1fr; /* 強制上下平分一半高度 */
-    gap: 15px; 
-    width: 100%; max-width: 600px; 
-    flex: 1; /* 吸滿剩下空間 */
-    min-height: 0; 
-    margin-bottom: 10px;
-}
-.rank-box { 
-    width: 100%; 
-    height: 100%; /* 填滿 Grid 切出來的格子 */
-    display: flex; flex-direction: column; 
-    padding: 15px; 
-    margin: 0; 
-    overflow: hidden; /* 防止撐破格子 */
-}
-.rank-box h3 { margin: 0 0 10px 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 5px; flex-shrink: 0; }
-.rank-list { 
-    flex: 1; 
-    min-height: 0; /* 🌟 啟動內層滾動的關鍵魔法屬性 */
-    padding-right: 5px;
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; 
-}
-.rank-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; margin-bottom: 8px; padding: 10px; border-radius: 10px; font-size: 1.1rem; border-left: 4px solid #ccc; flex-shrink: 0;}
+/* 🌟 榮譽榜：拔除內部滾軸，讓它隨著網頁自然往下長 */
+.leaderboard-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; height: auto; margin-bottom: 20px; }
+.rank-box { width: 100%; height: auto; display: flex; flex-direction: column; padding: 20px; margin: 0; }
+.rank-box h3 { margin: 0 0 15px 0; color: #333; font-size: 1.2rem; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+.rank-list { width: 100%; height: auto; }
+.rank-item { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; margin-bottom: 8px; padding: 10px; border-radius: 10px; font-size: 1.1rem; border-left: 4px solid #ccc; }
 .rank-item.top-1 { border-left-color: #FFD700; background: #fffde7; }
 .rank-item.top-2 { border-left-color: #C0C0C0; }
 .rank-item.top-3 { border-left-color: #CD7F32; }
@@ -111,8 +84,8 @@ input, select { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; b
 @keyframes monsterLunge { 0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } 40% { transform: scale(2.5) translateY(50px); filter: drop-shadow(0 20px 20px rgba(0,0,0,0.6)); } 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); } }
 .monster-attack-anim { animation: monsterLunge 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; position: relative; }
 
-/* 雙人對戰 */
-#screen-multi { padding: 0 !important; }
+/* 雙人對戰 (強制不滾動，鎖定畫面) */
+#screen-multi { padding: 0 !important; overflow: hidden; }
 .player-zone { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px 20px; transition: background-color 0.3s; position: relative; overflow: hidden; }
 #p1-zone { transform: rotate(180deg); }
 .p1-theme { background-color: #ffebee; border-bottom: 2px solid #ef5350; }
