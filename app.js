@@ -31,15 +31,52 @@ function login() {
     showScreen('screen-menu');
 }
 
-// 🌟 單人模式
+// ==========================================
+// 🌟 單人模式 (加入智慧防重覆抽題)
+// ==========================================
 let hp = 500, bossHp = 1000, score = 0, combo = 0, currentQ = null, timer = null, timeLeft = 20;
-function startSinglePlayer() { hp = 500; bossHp = 1000; score = 0; combo = 0; document.getElementById('boss-avatar').innerText = "👾"; updateStats(); showScreen('screen-single'); Swal.fire({ title: '病魔來襲！', text: '準備好你的營養素！', icon: 'warning', timer: 1500, showConfirmButton: false }).then(() => { nextQuestion(); }); }
+let singleQuestionPool = []; // 單局題庫牌堆
+let singleLastQIndex = -1;   // 記錄上一題的原始位置，用來防止主題重複
+
+function startSinglePlayer() { 
+    hp = 500; bossHp = 1000; score = 0; combo = 0; 
+    
+    // 🌟 初始化牌堆，並標記每題的原始位置
+    singleQuestionPool = questionsData.map((q, idx) => ({ ...q, originalIndex: idx }));
+    singleLastQIndex = -1;
+    
+    document.getElementById('boss-avatar').innerText = "👾"; 
+    updateStats(); showScreen('screen-single'); 
+    Swal.fire({ title: '病魔來襲！', text: '準備好你的營養素！', icon: 'warning', timer: 1500, showConfirmButton: false }).then(() => { nextQuestion(); }); 
+}
+
 function updateStats() { document.getElementById('player-hp').innerText = hp; document.getElementById('player-score').innerText = score; document.getElementById('boss-hp-text').innerText = bossHp; const hpPercent = Math.max(0, (bossHp / 1000) * 100); document.getElementById('boss-hp-bar').style.width = hpPercent + "%"; const comboEl = document.getElementById('combo-text'); const screen = document.getElementById('screen-single'); if (combo >= 3) { comboEl.style.display = 'block'; document.getElementById('combo-count').innerText = combo; screen.classList.add('combo-aura'); } else { comboEl.style.display = 'none'; screen.classList.remove('combo-aura'); } }
+
 function nextQuestion() {
     clearInterval(timer); if (hp <= 0) { endGame("lose"); return; } if (bossHp <= 0) { endGame("win"); return; }
     document.getElementById('boss-avatar').innerText = "👾"; 
-    const qIndex = Math.floor(Math.random() * questionsData.length); currentQ = questionsData[qIndex]; document.getElementById('boss-question').innerText = currentQ.q;
+    
+    // 🌟 智慧抽題系統
+    if (singleQuestionPool.length === 0) {
+        // 如果把 100 題全答完了 (極少見)，就重新洗牌
+        singleQuestionPool = questionsData.map((q, idx) => ({ ...q, originalIndex: idx }));
+    }
+    
+    let drawIdx = 0;
+    // 嘗試抽牌 5 次，如果抽到的題目跟上一題太近 (代表主題一樣)，就重抽
+    for (let i = 0; i < 5; i++) {
+        drawIdx = Math.floor(Math.random() * singleQuestionPool.length);
+        if (singleLastQIndex === -1 || Math.abs(singleQuestionPool[drawIdx].originalIndex - singleLastQIndex) > 5) break;
+    }
+    
+    currentQ = singleQuestionPool[drawIdx];
+    singleLastQIndex = currentQ.originalIndex; // 記下這次的題目位置
+    singleQuestionPool.splice(drawIdx, 1);     // 從牌堆中徹底剔除，保證不重複
+    
+    document.getElementById('boss-question').innerText = currentQ.q;
     const optionsArea = document.getElementById('options-area'); optionsArea.innerHTML = "";
+    
+    // 答案選項洗牌
     let ops = currentQ.options.map((opt, idx) => ({ text: opt, isCorrect: idx === 0 }));
     for (let i = ops.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ops[i], ops[j]] = [ops[j], ops[i]]; }
     ops.forEach((obj) => { const btn = document.createElement('button'); btn.className = 'btn'; btn.style.background = '#fff'; btn.style.color = '#333'; btn.style.border = '2px solid #ccc'; btn.innerText = obj.text; btn.onclick = () => checkAnswer(obj.isCorrect, btn); optionsArea.appendChild(btn); });
@@ -48,11 +85,8 @@ function nextQuestion() {
     timer = setInterval(() => { 
         timeLeft--; document.getElementById('question-timer').innerText = timeLeft; 
         if (timeLeft <= 0) { 
-            clearInterval(timer); 
-            hp -= 100; combo = 0; 
-            // 🌟 超時嚴厲懲罰：扣 100 分 (分數不低於 0)
+            clearInterval(timer); hp -= 100; combo = 0; 
             score -= 100; if(score < 0) score = 0; 
-            
             playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); 
             optionsArea.innerHTML = "<h3 style='color:red;'>超時！扣 100 滴血與 100 分！</h3>"; 
             setTimeout(nextQuestion, 1500); 
@@ -69,13 +103,10 @@ function checkAnswer(isCorrect, btnElement) {
         document.getElementById('boss-avatar').innerText = "💥"; bossContainer.classList.add('shake-anim'); setTimeout(() => bossContainer.classList.remove('shake-anim'), 400); 
         showFloatingText(`-${dmg}`, '#d32f2f', 'boss-container'); fireMagicAttack(); 
         optionsArea.innerHTML += `<h3 style='color:green; margin:5px 0;'>命中！造成 ${dmg} 傷害！<br><span style='font-size:0.9rem; color:#FF9800;'>基礎 +${basePoints} | 極速加成 +${timeBonus}</span></h3>`; 
-    } 
-    else { 
+    } else { 
         btnElement.style.background = '#f44336'; btnElement.style.color = 'white'; 
         hp -= 100; combo = 0; 
-        // 🌟 答錯嚴厲懲罰：扣 100 分 (分數不低於 0)
         score -= 100; if(score < 0) score = 0;
-        
         playerTakeDamage(); showFloatingText('-100', '#1976D2', 'screen-single'); 
         optionsArea.innerHTML += `<h3 style='color:red; margin:5px 0;'>答錯了！扣 100 滴血與 100 分！</h3>`; 
     }
@@ -102,16 +133,49 @@ function saveRecordAndGo(targetScreen) {
 }
 function forceEndGame() { clearInterval(timer); document.getElementById('screen-single').classList.remove('combo-aura'); Swal.fire('逃離戰場', '本次分數不予記錄', 'info').then(() => showScreen('screen-menu')); }
 
-// 🌟 雙人對戰模式
+
+// ==========================================
+// 🌟 雙人對戰模式 (同步套用智慧抽題)
+// ==========================================
 let p1Hp = 1000, p2Hp = 1000, multiTimer = null, multiTimeLeft = 20;
 let p1Locked = false, p2Locked = false;
-function startMultiPlayer() { p1Hp = 1000; p2Hp = 1000; updateMultiStats(); showScreen('screen-multi'); Swal.fire({ title: '⚔️ 雙人對戰', text: '請將 iPad 平放於桌面，兩人各佔一邊！', icon: 'info', timer: 2000, showConfirmButton: false }).then(() => nextMultiQuestion()); }
+let multiQuestionPool = [];
+let multiLastQIndex = -1;
+
+function startMultiPlayer() { 
+    p1Hp = 1000; p2Hp = 1000; 
+    
+    // 初始化雙人題庫
+    multiQuestionPool = questionsData.map((q, idx) => ({ ...q, originalIndex: idx }));
+    multiLastQIndex = -1;
+
+    updateMultiStats(); showScreen('screen-multi'); 
+    Swal.fire({ title: '⚔️ 雙人對戰', text: '請將 iPad 平放於桌面，兩人各佔一邊！', icon: 'info', timer: 2000, showConfirmButton: false }).then(() => nextMultiQuestion()); 
+}
+
 function updateMultiStats() { document.getElementById('p1-hp').innerText = p1Hp; document.getElementById('p2-hp').innerText = p2Hp; }
+
 function nextMultiQuestion() {
     clearInterval(multiTimer); p1Locked = false; p2Locked = false;
     if (p1Hp <= 0 || p2Hp <= 0) { endMultiGame(); return; }
-    const qIndex = Math.floor(Math.random() * questionsData.length); const q = questionsData[qIndex];
+
+    // 🌟 雙人模式智慧抽題
+    if (multiQuestionPool.length === 0) {
+        multiQuestionPool = questionsData.map((q, idx) => ({ ...q, originalIndex: idx }));
+    }
+    
+    let drawIdx = 0;
+    for (let i = 0; i < 5; i++) {
+        drawIdx = Math.floor(Math.random() * multiQuestionPool.length);
+        if (multiLastQIndex === -1 || Math.abs(multiQuestionPool[drawIdx].originalIndex - multiLastQIndex) > 5) break;
+    }
+    
+    const q = multiQuestionPool[drawIdx];
+    multiLastQIndex = q.originalIndex;
+    multiQuestionPool.splice(drawIdx, 1);
+
     document.getElementById('p1-question').innerText = q.q; document.getElementById('p2-question').innerText = q.q;
+    
     let ops = q.options.map((opt, idx) => ({ text: opt, isCorrect: idx === 0 }));
     for (let i = ops.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ops[i], ops[j]] = [ops[j], ops[i]]; }
     const p1Area = document.getElementById('p1-options'); p1Area.innerHTML = ""; const p2Area = document.getElementById('p2-options'); p2Area.innerHTML = "";
@@ -121,8 +185,18 @@ function nextMultiQuestion() {
     });
     
     multiTimeLeft = 20; document.getElementById('multi-timer').innerText = multiTimeLeft;
-    multiTimer = setInterval(() => { multiTimeLeft--; document.getElementById('multi-timer').innerText = multiTimeLeft; if (multiTimeLeft <= 0) { clearInterval(multiTimer); p1Hp -= 50; p2Hp -= 50; updateMultiStats(); flashMultiDamage(1); flashMultiDamage(2); document.getElementById('p1-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; document.getElementById('p2-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; setTimeout(nextMultiQuestion, 1500); } }, 1000);
+    multiTimer = setInterval(() => { 
+        multiTimeLeft--; document.getElementById('multi-timer').innerText = multiTimeLeft; 
+        if (multiTimeLeft <= 0) { 
+            clearInterval(multiTimer); p1Hp -= 50; p2Hp -= 50; updateMultiStats(); 
+            flashMultiDamage(1); flashMultiDamage(2); 
+            document.getElementById('p1-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; 
+            document.getElementById('p2-question').innerHTML = "<span style='color:red;'>超時！雙方各扣 50 血！</span>"; 
+            setTimeout(nextMultiQuestion, 1500); 
+        } 
+    }, 1000);
 }
+
 function handleMultiClick(playerNum, isCorrect, btnElement) {
     if (playerNum === 1 && p1Locked) return; if (playerNum === 2 && p2Locked) return;
     btnElement.style.background = isCorrect ? '#4CAF50' : '#f44336'; btnElement.style.color = 'white';
